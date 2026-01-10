@@ -1,0 +1,17 @@
+{
+  "name": "trello-clone",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "scripts": {
+    "dev": "bun run dev:backend & bun run dev:frontend",
+    "dev:backend": "cd backend && bin/rails server",
+    "dev:frontend": "cd frontend && bun run dev"
+  }
+}
