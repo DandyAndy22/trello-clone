@@ -1,59 +1,59 @@
 <script lang="ts">
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcomeFallback from '$lib/images/svelte-welcome.png';
+	import { onMount } from 'svelte'
+
+	interface Board {
+		title: string
+	}
+
+	let boards: Board[]
+	let newBoardTitle = ''
+
+	async function fetchBoards() {
+		const response = await fetch('http://localhost:3000/api/v1/boards')
+		boards = await response.json()
+	}
+
+	async function createBoard() {
+		await fetch('http://localhost:3000/api/v1/boards', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ board: { title: newBoardTitle } })
+		})
+		newBoardTitle = ''
+		fetchBoards()
+	}
+
+	onMount(fetchBoards)
 </script>
 
-<svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
-</svelte:head>
+<h1>
+	My Boards
+</h1>
 
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcomeFallback} alt="Welcome" />
-			</picture>
-		</span>
+<input bind:value={newBoardTitle} placeholder="New board name" />
+<button on:click={createBoard}>Create Board</button>
 
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
-</section>
+<div class="boards">
+	{#each boards as board}
+		<div class="board-card">
+			<h3>{board.title}</h3>
+		</div>
+	{/each}
+</div>
 
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
+	.boards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+		gap: 1rem;
+		margin-top: 2rem;
 	}
 
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
+	.board-card {
+		padding: 2rem;
+		background: #0079bf;
+		color: white;
+		border-radius: 4px;
+		cursor: pointer;
 	}
 </style>
