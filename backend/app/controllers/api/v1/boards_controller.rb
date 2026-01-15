@@ -13,6 +13,13 @@ class Api::V1::BoardsController < ApplicationController
         end
     end
 
+    def show
+        board = Board.includes(:lists).find(params[:id])
+        render json: board.as_json(include: :lists)
+    rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Board not found' }, status: :not_found
+    end
+
     private
 
     def board_params

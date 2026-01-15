@@ -10,7 +10,9 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :boards, only: [:index, :create]
+      resources :boards, only: [:index, :create, :show] do
+        resources :lists, only: [:index, :create]
+      end
     end
   end
 end
