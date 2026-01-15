@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte'
 
 	interface Board {
+		id: number
 		title: string
 	}
 
@@ -35,9 +36,9 @@
 
 <div class="boards">
 	{#each boards as board}
-		<div class="board-card">
+		<a href="/boards/{board.id}" class="board-card">
 			<h3>{board.title}</h3>
-		</div>
+		</a>
 	{/each}
 </div>
 
@@ -55,5 +56,7 @@
 		color: white;
 		border-radius: 4px;
 		cursor: pointer;
+    	text-decoration: none;
+		display: block;
 	}
 </style>
