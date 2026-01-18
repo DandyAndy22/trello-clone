@@ -20,7 +20,7 @@
     async function fetchBoard() {
         const response = await fetch(`http://localhost:3000/api/v1/boards/${boardId}`)
         board = await response.json()
-        lists = board.lists || []
+        lists = board?.lists || []
     }
 
     async function createList() {
