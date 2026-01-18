@@ -14,8 +14,8 @@ class Api::V1::BoardsController < ApplicationController
     end
 
     def show
-        board = Board.includes(:lists).find(params[:id])
-        render json: board.as_json(include: :lists)
+        board = Board.includes(lists: :cards).find(params[:id])
+        render json: board.as_json(include: { lists: { include: :cards } })
     rescue ActiveRecord::RecordNotFound
         render json: { error: 'Board not found' }, status: :not_found
     end

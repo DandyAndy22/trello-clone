@@ -13,6 +13,9 @@ Rails.application.routes.draw do
       resources :boards, only: [:index, :create, :show] do
         resources :lists, only: [:index, :create]
       end
+      resources :lists, only: [] do
+        resources :cards, only: [:index, :create]
+      end
     end
   end
 end
