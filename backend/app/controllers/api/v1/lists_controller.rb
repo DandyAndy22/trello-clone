@@ -5,7 +5,7 @@ class Api::V1::ListsController < ApplicationController
     end
 
     def create
-        list = List.new(lsit_params)
+        list = List.new(list_params)
         list.board_id = params[:board_id]
         list.position = List.where(board_id: params[:board_id]).count
 

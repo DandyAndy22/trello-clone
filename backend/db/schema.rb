@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_18_181131) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_18_190743) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -25,10 +25,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_18_181131) do
     t.text "title"
     t.text "description"
     t.integer "position"
-    t.bigint "lists_id", null: false
+    t.bigint "list_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["lists_id"], name: "index_cards_on_lists_id"
+    t.index ["list_id"], name: "index_cards_on_list_id"
   end
 
   create_table "lists", force: :cascade do |t|
@@ -39,5 +39,5 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_18_181131) do
     t.datetime "updated_at", null: false
   end
 
-  add_foreign_key "cards", "lists", column: "lists_id"
+  add_foreign_key "cards", "lists"
 end

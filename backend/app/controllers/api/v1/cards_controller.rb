@@ -5,9 +5,9 @@ class Api::V1::CardsController < ApplicationController
     end
 
     def create
-        card = Card.new(card_params)
-        card.list_id = params[:list_id]
-        card.position = Card.where(list_id: params[:list_id]).count
+        list = List.find(params[:list_id])
+        card = list.cards.build(card_params)
+        card.position = list.cards.count
 
         if card.save
             render json: card, status: :created
