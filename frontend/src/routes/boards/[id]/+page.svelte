@@ -7,13 +7,20 @@
         lists: List[]
     }
 
-    interface List {
+    interface Card {
         title: string
+    }
+
+    interface List {
+        id: number
+        title: string
+        cards?: Card[]
     }
 
     let board: Board | null = null
     let lists: List[] = []
     let newListTitle = ''
+    let newCardTitles: Record<number, string> = {}
 
     $: boardId = $page.params.id
 
@@ -36,6 +43,20 @@
         fetchBoard()
     }
 
+    async function createCard(listId: number) {
+      const title = newCardTitles[listId]
+      if(!title.trim()) return
+
+      await fetch(`http://localhost:3000/api/v1/lists/${listId}/cards`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ card: { title } })
+      })
+
+      newCardTitles[listId] = ''
+      fetchBoard()
+    }
+
     onMount(fetchBoard)
 </script>
 
@@ -48,8 +69,22 @@
     {#each lists as list}
       <div class="list">
         <h3>{list.title}</h3>
+
         <div class="cards">
-          <!-- Cards will go here -->
+          {#each list.cards || [] as card}
+            <div class="card">
+              {card.title}
+            </div>
+          {/each}
+        </div>
+
+        <div class="add-card">
+            <input 
+              bind:value={newCardTitles[list.id]} 
+              placeholder="Enter card title..."
+              on:keydown={(e) => e.key === 'Enter' && createCard(list.id)}
+            />
+            <button on:click={() => createCard(list.id)}>Add Card</button>
         </div>
       </div>
     {/each}
@@ -124,6 +159,45 @@
   }
 
   .cards {
-    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card {
+    background: white;
+    padding: 0.75rem;
+    border-radius: 4px;
+    box-shadow: 0 1px 0 rgba(9, 30, 66, 0.25);
+    cursor: pointer;
+  }
+
+  .card:hover {
+    background: #f4f5f7;
+  }
+
+  .add-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .add-card input {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .add-card button {
+    padding: 0.5rem;
+    background: #0079bf;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
   }
 </style>
