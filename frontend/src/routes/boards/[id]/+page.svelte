@@ -1,14 +1,20 @@
 <script lang='ts'>
     import { onMount } from 'svelte'
     import { page } from '$app/stores'
+    import { flip } from 'svelte/animate'
+    import { dndzone } from 'svelte-dnd-action'
 
     interface Board {
+        id: number
         title: string
         lists: List[]
     }
 
     interface Card {
+        id: number
         title: string
+        position: number
+        list_id: number
     }
 
     interface List {
@@ -22,12 +28,19 @@
     let newListTitle = ''
     let newCardTitles: Record<number, string> = {}
 
+    const flipDurationMs: number = 200
+
     $: boardId = $page.params.id
 
     async function fetchBoard() {
         const response = await fetch(`http://localhost:3000/api/v1/boards/${boardId}`)
         board = await response.json()
         lists = board?.lists || []
+
+        lists = lists.map(list => ({
+          ...list,
+          cards: (list.cards || []).map(card => ({ ...card, id: card.id }))
+        }))
     }
 
     async function createList() {
@@ -57,6 +70,32 @@
       fetchBoard()
     }
 
+    async function updateCard(cardId: number, updates: Partial<Card>) {
+      await fetch(`http://localhost:3000/api/v1/cards/${cardId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ card: updates })
+      })
+    }
+
+    function handleDndConsider(listId: number, event: any) {
+      const listIndex = lists.findIndex(l => l.id === listId)
+      lists[listIndex].cards = event.detail.items
+      lists = [...lists] // Trigger reactivity
+    }
+
+    function handleDndFinalize(listId: number, event: any) {
+      const listIndex = lists.findIndex(l => l.id === listId)
+      lists[listIndex].cards = event.detail.items
+      lists = [...lists] // Trigger reactivity
+
+      // Update card positions in the backend
+      const cards = event.detail.items
+      cards.forEach((card: Card, index: number) => {
+        updateCard(card.id, { position: index, list_id: listId })
+      })
+    }
+
     onMount(fetchBoard)
 </script>
 
@@ -70,9 +109,14 @@
       <div class="list">
         <h3>{list.title}</h3>
 
-        <div class="cards">
-          {#each list.cards || [] as card}
-            <div class="card">
+        <div
+          class="cards"
+          use:dndzone={{items: list.cards || [], flipDurationMs}}
+          on:consider={(e) => handleDndConsider(list.id, e)}
+          on:finalize={(e) => handleDndFinalize(list.id, e)}
+        >
+          {#each list.cards || [] as card (card.id)}
+            <div class="card" animate:flip={{ duration: flipDurationMs }}>
               {card.title}
             </div>
           {/each}
@@ -103,6 +147,11 @@
 {/if}
 
 <style>
+  :global(body) {
+    background: #0079bf;
+    margin: 0;
+  }
+
   .board-header {
     padding: 1rem 2rem;
     background: rgba(0, 0, 0, 0.2);
@@ -163,6 +212,7 @@
     flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+    min-height: 50px;
   }
 
   .card {
@@ -170,7 +220,11 @@
     padding: 0.75rem;
     border-radius: 4px;
     box-shadow: 0 1px 0 rgba(9, 30, 66, 0.25);
-    cursor: pointer;
+    cursor: grab;
+  }
+
+  .card:active {
+    cursor: grabbing;
   }
 
   .card:hover {

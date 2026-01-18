@@ -14,8 +14,9 @@ Rails.application.routes.draw do
         resources :lists, only: [:index, :create]
       end
       resources :lists, only: [] do
-        resources :cards, only: [:index, :create]
+        resources :cards, only: [:index, :create, :update]
       end
+      resources :cards, only: [:update]
     end
   end
 end
