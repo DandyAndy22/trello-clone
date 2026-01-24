@@ -10,12 +10,17 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      post '/signup', to: 'authentication#signup'
+      post '/login', to: 'authentication#login'
+
       resources :boards, only: [:index, :create, :show] do
         resources :lists, only: [:index, :create]
       end
+
       resources :lists, only: [] do
         resources :cards, only: [:index, :create, :update]
       end
+
       resources :cards, only: [:update]
     end
   end

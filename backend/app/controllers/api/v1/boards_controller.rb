@@ -1,11 +1,11 @@
 class Api::V1::BoardsController < ApplicationController
     def index
-        boards = Board.all
+        boards = current_user.boards.order(:created_at)
         render json: boards
     end
 
     def create
-        board = Board.new(board_params)
+        board = current_user.boards.build(board_params)
         if board.save
             render json: board, status: :created
         else
@@ -14,7 +14,7 @@ class Api::V1::BoardsController < ApplicationController
     end
 
     def show
-        board = Board.includes(lists: :cards).find(params[:id])
+        board = current_user.boards.includes(lists: :cards).find(params[:id])
         render json: board.as_json(include: { lists: { include: :cards } })
     rescue ActiveRecord::RecordNotFound
         render json: { error: 'Board not found' }, status: :not_found
