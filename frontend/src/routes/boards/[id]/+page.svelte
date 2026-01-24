@@ -148,7 +148,7 @@
 
 <style>
   :global(body) {
-    background: #0079bf;
+    background: floralwhite;
     margin: 0;
   }
 

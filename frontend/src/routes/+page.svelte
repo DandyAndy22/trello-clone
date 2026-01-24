@@ -52,7 +52,7 @@
 
 	.board-card {
 		padding: 2rem;
-		background: #0079bf;
+		background: cadetblue;
 		color: white;
 		border-radius: 4px;
 		cursor: pointer;
