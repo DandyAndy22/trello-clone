@@ -3,6 +3,10 @@
     import { page } from '$app/stores'
     import { flip } from 'svelte/animate'
     import { dndzone } from 'svelte-dnd-action'
+    import { apiRequest } from '$lib/api';
+    import { auth } from '$lib/stores/auth';
+    import { goto } from '$app/navigation';
+    import { browser } from '$app/environment';
 
     interface Board {
         id: number
@@ -23,6 +27,11 @@
         cards?: Card[]
     }
 
+    // Check auth
+    $: if (browser && !$auth) {
+      goto('/login');
+    }
+
     let board: Board | null = null
     let lists: List[] = []
     let newListTitle = ''
@@ -33,49 +42,62 @@
     $: boardId = $page.params.id
 
     async function fetchBoard() {
-        const response = await fetch(`http://localhost:3000/api/v1/boards/${boardId}`)
-        board = await response.json()
-        lists = board?.lists || []
-
+      try {
+        const response = await apiRequest(`/boards/${boardId}`);
+        board = await response.json();
+        lists = board.lists || [];
+        
         lists = lists.map(list => ({
           ...list,
           cards: (list.cards || []).map(card => ({ ...card, id: card.id }))
-        }))
+        }));
+      } catch (error) {
+        console.error('Failed to fetch board:', error);
+      }
     }
 
     async function createList() {
-        if(!newListTitle.trim()) return
-
-        await fetch(`http://localhost:3000/api/v1/boards/${boardId}/lists`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ list: { title: newListTitle } })
-        })
-
-        newListTitle = ''
-        fetchBoard()
+      if (!newListTitle.trim()) return;
+  
+      try {
+        await apiRequest(`/boards/${boardId}/lists`, {
+          method: 'POST',
+          body: JSON.stringify({ list: { title: newListTitle } })
+        });
+        
+        newListTitle = '';
+        fetchBoard();
+      } catch (error) {
+        console.error('Failed to create list:', error);
+      }
     }
 
     async function createCard(listId: number) {
-      const title = newCardTitles[listId]
-      if(!title.trim()) return
-
-      await fetch(`http://localhost:3000/api/v1/lists/${listId}/cards`, {
+      const title = newCardTitles[listId];
+      if (!title?.trim()) return;
+      
+      try {
+        await apiRequest(`/lists/${listId}/cards`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ card: { title } })
-      })
-
-      newCardTitles[listId] = ''
-      fetchBoard()
+        });
+        
+        newCardTitles[listId] = '';
+        fetchBoard();
+      } catch (error) {
+        console.error('Failed to create card:', error);
+      }
     }
 
     async function updateCard(cardId: number, updates: Partial<Card>) {
-      await fetch(`http://localhost:3000/api/v1/cards/${cardId}`, {
+      try {
+        await apiRequest(`/cards/${cardId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ card: updates })
-      })
+        });
+      } catch (error) {
+        console.error('Failed to update card:', error);
+      }
     }
 
     function handleDndConsider(listId: number, event: any) {
@@ -147,11 +169,6 @@
 {/if}
 
 <style>
-  :global(body) {
-    background: floralwhite;
-    margin: 0;
-  }
-
   .board-header {
     padding: 1rem 2rem;
     background: rgba(0, 0, 0, 0.2);
