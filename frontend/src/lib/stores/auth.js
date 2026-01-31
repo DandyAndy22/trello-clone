@@ -27,8 +27,8 @@ export const login = async (email, password) => {
     }
 
     const data = await response.json()
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify(data.user))
+    localStorage.setItem('authToken', data.token)
+    localStorage.setItem('authUser', JSON.stringify(data.user))
     auth.set({ token: data.token, user: data.user })
     return data
 }
@@ -48,14 +48,14 @@ export const signup = async (name, email, password, passwordConfirmation) => {
     }
 
     const data = await response.json()
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify(data.user))
+    localStorage.setItem('authToken', data.token)
+    localStorage.setItem('authUser', JSON.stringify(data.user))
     auth.set({ token: data.token, user: data.user })
     return data
 }
 
 export const logout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('authUser')
     auth.set(null)
 }

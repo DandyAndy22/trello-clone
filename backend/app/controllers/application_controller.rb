@@ -9,6 +9,12 @@ class ApplicationController < ActionController::API
     begin
       header = request.headers['Authorization']
       token = header.split(' ').last if header
+      
+      unless token
+        render json: { error: 'Not Authorized' }, status: :unauthorized
+        return
+      end
+      
       decoded = JsonWebToken.decode(token)
       
       if decoded
@@ -16,7 +22,7 @@ class ApplicationController < ActionController::API
       else
         render json: { error: 'Not Authorized' }, status: :unauthorized
       end
-    rescue ActiveRecord::RecordNotFound, JWT::DecodeError
+    rescue ActiveRecord::RecordNotFound, JWT::DecodeError, ArgumentError, TypeError
       render json: { error: 'Not Authorized' }, status: :unauthorized
     end
   end

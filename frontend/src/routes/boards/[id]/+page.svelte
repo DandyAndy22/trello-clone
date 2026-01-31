@@ -43,9 +43,9 @@
 
     async function fetchBoard() {
       try {
-        const response = await apiRequest(`/boards/${boardId}`);
-        board = await response.json();
-        lists = board.lists || [];
+        const boardData = await apiRequest(`/boards/${boardId}`);
+        board = boardData;
+        lists = boardData.lists || [];
         
         lists = lists.map(list => ({
           ...list,

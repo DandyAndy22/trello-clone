@@ -1,20 +1,20 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import { auth, logout } from '$lib/stores/auth';
   import { apiRequest } from '$lib/api';
   import { goto } from '$app/navigation';
   
-  let boards = [];
-  let newBoardTitle = '';
-  
-  $: if (!$auth) {
-    goto('/login');
+  interface Board {
+    id: number;
+    title: string;
   }
+  
+  let boards: Board[] = [];
+  let newBoardTitle = '';
 
   async function fetchBoards() {
     try {
-      const response = await apiRequest('/boards');
-      boards = await response.json();
+      boards = await apiRequest('/boards');
     } catch (error) {
       console.error('Failed to fetch boards:', error);
     }
@@ -39,7 +39,9 @@
   }
 
   onMount(() => {
-    if ($auth) {
+    if (!$auth) {
+      goto('/login');
+    } else {
       fetchBoards();
     }
   });
