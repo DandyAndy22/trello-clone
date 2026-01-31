@@ -26,13 +26,21 @@ class Api::V1::CardsController < ApplicationController
         end
     end
 
+    def show
+        card = Card.find(params[:id])
+
+        render json: card
+    rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
+    end
+
     private
 
     def card_update_params
-        params.require(:card).permit(:title, :description, :position, :list_id)
+        params.require(:card).permit(:title, :description, :due_date, :position, :list_id)
     end
 
     def card_params
-        params.require(:card).permit(:title, :description)
+        params.require(:card).permit(:title, :description, :due_date)
     end
 end
