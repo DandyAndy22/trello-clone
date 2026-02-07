@@ -20,6 +20,22 @@ class Api::V1::BoardsController < ApplicationController
         render json: { error: 'Board not found' }, status: :not_found
     end
 
+    def destroy
+        board = current_user.boards.find(params[:id])
+        board.destroy
+        head :no_content
+    rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Board not found' }, status: :not_found
+    end
+
+    def destroy
+        board = current_user.boards.find(params[:id])
+        board.destroy
+        head :no_content
+    rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Board not found' }, status: :not_found
+    end
+
     private
 
     def board_params

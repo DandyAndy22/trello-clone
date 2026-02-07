@@ -13,7 +13,7 @@ Rails.application.routes.draw do
       post '/signup', to: 'authentication#signup'
       post '/login', to: 'authentication#login'
 
-      resources :boards, only: [:index, :create, :show] do
+      resources :boards, only: [:index, :create, :show, :destroy] do
         resources :lists, only: [:index, :create]
       end
 

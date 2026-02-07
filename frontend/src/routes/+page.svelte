@@ -10,6 +10,7 @@
   }
   
   let boards: Board[] = [];
+  let deletingBoardId: number | null = null
   let newBoardTitle = '';
 
   async function fetchBoards() {
@@ -17,6 +18,27 @@
       boards = await apiRequest('/boards');
     } catch (error) {
       console.error('Failed to fetch boards:', error);
+    }
+  }
+
+  async function deleteBoard(boardId: number, event: MouseEvent) {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (!confirm('Are you sure you want to delete this board?')) return
+
+    deletingBoardId = boardId;
+
+    try {
+      await apiRequest(`/boards/${boardId}`, {
+        method: 'DELETE',
+      })
+      await fetchBoards()
+    } catch (error) {
+      console.error('Failed to delete board:', error)
+      alert('Failed to delete board.')
+    } finally {
+      deletingBoardId = null
     }
   }
 
@@ -64,9 +86,19 @@
 
     <div class="boards">
       {#each boards as board}
-        <a href="/boards/{board.id}" class="board-card">
-          <h3>{board.title}</h3>
-        </a>
+        <div class="board-card-container">
+          <a href="/boards/{board.id}" class="board-card">
+            <h3>{board.title}</h3>
+          </a>
+          <button 
+            class="delete-board-button"
+            on:click={(e) => deleteBoard(board.id, e)}
+            disabled={deletingBoardId === board.id}
+            title="Delete board"
+          >
+            {deletingBoardId === board.id ? '...' : '×'}
+          </button>
+        </div>
       {/each}
     </div>
   </div>
@@ -145,6 +177,10 @@
     gap: 1rem;
   }
   
+  .board-card-container {
+    position: relative;
+  }
+  
   .board-card {
     padding: 2rem;
     background: #0079bf;
@@ -161,5 +197,36 @@
 
   .board-card h3 {
     margin: 0;
+  }
+
+  .delete-board-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.2s;
+    z-index: 1;
+  }
+
+  .board-card-container:hover .delete-board-button {
+    opacity: 1;
+  }
+
+  .delete-board-button:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.2);
+    color: #eb5a46;
+  }
+
+  .delete-board-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 </style>
