@@ -33,6 +33,7 @@
     }
 
     let board: Board | null = null
+    let deletingListId: number | null = null
     let lists: List[] = []
     let newListTitle = ''
     let newCardTitles: Record<number, string> = {}
@@ -69,6 +70,24 @@
         fetchBoard();
       } catch (error) {
         console.error('Failed to create list:', error);
+      }
+    }
+
+    async function deleteList(listId: number) {
+      if (!confirm('Are you sure you want to delete this list?')) return
+
+      deletingListId = listId;
+
+      try {
+        await apiRequest(`/lists/${listId}`, {
+          method: 'DELETE',
+        })
+        await fetchBoard()
+      } catch (error) {
+        console.error('Failed to delete list:', error)
+        alert('Failed to delete list.')
+      } finally {
+        deletingListId = null
       }
     }
 
@@ -118,6 +137,8 @@
       })
     }
 
+
+
     onMount(fetchBoard)
 </script>
 
@@ -130,7 +151,14 @@
     {#each lists as list}
       <div class="list">
         <h3>{list.title}</h3>
-
+        <button 
+            class="delete-list-button"
+            on:click={() => deleteList(list.id)}
+            disabled={deletingListId === list.id}
+            title="Delete list"
+          >
+            {deletingListId === list.id ? '...' : '×'}
+          </button>
         <div
           class="cards"
           use:dndzone={{items: list.cards || [], flipDurationMs}}
@@ -222,6 +250,33 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+  }
+
+  .delete-list-button {
+    background: none;
+    border: none;
+    color: #5e6c84;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.2s;
+  }
+
+  .list:hover .delete-list-button {
+    opacity: 1;
+  }
+
+  .delete-list-button:hover:not(:disabled) {
+    background: #091e4214;
+    color: #eb5a46;
+  }
+
+  .delete-list-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .cards {

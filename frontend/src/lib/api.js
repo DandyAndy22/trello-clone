@@ -18,11 +18,19 @@ export async function apiRequest(endpoint, options = {}) {
     
     const response = await fetch(`${BASE_URL}${endpoint}`, config)
 
-    if (!response.ok && response.status === 401) {
-        // Token might be invalid or expired
-        const { logout } = await import('./stores/auth')
-        logout()
-        throw new Error('Session expired. Please log in again.')
+    if (response.status === 204) {
+        return null
     }
+
+    if (!response.ok) {
+        if (response.status === 401) {
+            const { logout } = await import('./stores/auth')
+            logout()
+            throw new Error('Session expired. Please log in again.')
+        }
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Request failed with status ${response.status}`)
+    }
+
     return response.json()
 }

@@ -16,6 +16,19 @@ class Api::V1::ListsController < ApplicationController
         end
     end
 
+    def destroy
+        list = List.find(params[:id])
+
+    if list.board.user_id == current_user.id    
+        list.destroy
+        head :no_content
+    else
+        render json: { error: 'Unauthorized' }, status: :unauthorized
+    end
+    rescue ActiveRecord::RecordNotFound
+        render json: { error: 'List not found' }, status: :not_found
+    end
+
     private
 
     def list_params
