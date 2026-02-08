@@ -39,7 +39,14 @@ export const signup = async (name, email, password, passwordConfirmation) => {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, email, password, password_confirmation: passwordConfirmation })
+        body: JSON.stringify({ 
+            authentication: {
+                name, 
+                email, 
+                password, 
+                password_confirmation: passwordConfirmation 
+            }
+        })
     })
 
     if (!response.ok) {
