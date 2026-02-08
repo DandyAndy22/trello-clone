@@ -18,6 +18,8 @@
         id: number
         title: string
         position: number
+        description?: string | null
+        due_date?: string | null
         list_id: number
     }
 
@@ -38,6 +40,12 @@
     let newListTitle = ''
     let newCardTitles: Record<number, string> = {}
 
+    // Modal state
+    let selectedCardId: number | null = null
+    let selectedCard: Card | null = null
+    let isLoadingCard = false
+    let isEditingCard = false
+
     const flipDurationMs: number = 200
 
     $: boardId = $page.params.id
@@ -56,6 +64,8 @@
         console.error('Failed to fetch board:', error);
       }
     }
+
+    // List operations
 
     async function createList() {
       if (!newListTitle.trim()) return;
@@ -91,6 +101,8 @@
       }
     }
 
+    // Card operations
+
     async function createCard(listId: number) {
       const title = newCardTitles[listId];
       if (!title?.trim()) return;
@@ -119,6 +131,45 @@
       }
     }
 
+    // Card Modal
+
+    async function openCardModal(cardId: number) {
+      isLoadingCard = true
+      selectedCardId = cardId
+
+      try {
+        const cardData = await apiRequest(`/cards/${cardId}`)
+        selectedCard = cardData
+      } catch (error) {
+        console.error('Failed to fetch card:', error)
+      } finally {
+        isLoadingCard = false
+      }
+    }
+
+    async function closeCardModal() {
+      selectedCardId = null
+      selectedCard = null
+      isEditingCard = false
+    }
+    
+    async function deleteCard(cardId: number) {
+      if (!confirm('Are you sure you want to delete this card?')) return
+
+      try {
+        await apiRequest(`/cards/${cardId}`, {
+          method: 'DELETE',
+        })
+        await fetchBoard()
+        closeCardModal()
+      } catch (error) {
+        console.error('Failed to delete card:', error)
+        alert('Failed to delete card.')
+      }
+    }
+
+    // DnD operations
+
     function handleDndConsider(listId: number, event: any) {
       const listIndex = lists.findIndex(l => l.id === listId)
       lists[listIndex].cards = event.detail.items
@@ -136,8 +187,6 @@
         updateCard(card.id, { position: index, list_id: listId })
       })
     }
-
-
 
     onMount(fetchBoard)
 </script>

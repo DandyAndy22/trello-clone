@@ -17,19 +17,28 @@ class Api::V1::CardsController < ApplicationController
     end
 
     def update
-        card = Card.find(params[:id])
+        card = Card.for_user(current_user).find(params[:id])
 
         if card.update(card_update_params)
             render json: card
         else
             render json: { errors: card.errors }, status: :unprocessable_entity
         end
+    rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
     end
 
     def show
-        card = Card.find(params[:id])
-
+        card = Card.for_user(current_user).find(params[:id])
         render json: card
+    rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
+    end
+
+    def destroy
+        card = Card.for_user(current_user).find(params[:id])
+        card.destroy
+        head :no_content
     rescue ActiveRecord::RecordNotFound
         render json: { error: 'Card not found' }, status: :not_found
     end
