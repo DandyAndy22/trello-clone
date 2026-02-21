@@ -7,6 +7,8 @@
     import { auth } from '$lib/stores/auth';
     import { goto } from '$app/navigation';
     import { browser } from '$app/environment';
+    import Modal from '$lib/components/Modal.svelte';
+    import CardDetail from '$lib/components/CardDetail.svelte';
 
     interface Board {
         id: number
@@ -41,6 +43,7 @@
     let newCardTitles: Record<number, string> = {}
 
     // Modal state
+    let showCardModal = false;
     let selectedCardId: number | null = null
     let selectedCard: Card | null = null
     let isLoadingCard = false
@@ -49,6 +52,16 @@
     const flipDurationMs: number = 200
 
     $: boardId = $page.params.id
+
+    function openCard(card: Card) {
+      selectedCard = card;
+      showCardModal = true;
+    }
+
+    function closeCard() {
+      selectedCard = null;
+      showCardModal = false;
+    }
 
     async function fetchBoard() {
       try {
@@ -215,8 +228,19 @@
           on:finalize={(e) => handleDndFinalize(list.id, e)}
         >
           {#each list.cards || [] as card (card.id)}
-            <div class="card" animate:flip={{ duration: flipDurationMs }}>
+            <div 
+              class="card" 
+              animate:flip={{ duration: flipDurationMs }}
+              on:click={() => openCard(card)}
+              role="button"
+              tabindex="0"
+              aria-label="View card"
+              on:keydown={(e) => e.key === 'Enter' && openCard(card)}
+            >
               {card.title}
+              {#if card.due_date}
+                <span class="due-date">📅 {card.due_date}</span>
+              {/if}
             </div>
           {/each}
         </div>
@@ -244,6 +268,16 @@
 {:else}
   <p>Loading...</p>
 {/if}
+
+<Modal isOpen={showCardModal} onClose={closeCard}>
+  {#if selectedCard}
+    <CardDetail 
+      card={selectedCard}
+      onClose={closeCard}
+      onSave={fetchBoard}
+    />
+  {/if}
+</Modal>
 
 <style>
   .board-header {
@@ -374,5 +408,11 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
+  }
+
+  .due-date {
+    font-size: 12px;
+    color: #5e6c84;
+    margin-top: 0.5rem;
   }
 </style>
