@@ -4,6 +4,8 @@
 
 A Trello-inspired kanban board application for managing tasks and projects.
 
+Getting my feet wet using Rails as an API only resource, Svelte on the frontend and using Bun for fun.
+
 ## Tech Stack
 
 ### Backend
